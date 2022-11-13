@@ -110,7 +110,7 @@ pip install -r requirements.txt
 followed by the installation of [binance futures python](https://github.com/Binance-docs/Binance_Futures_python)
 
 ```
-python -m pip install git+https://github.com/Binance-docs/Binance_Futures_python.git
+python3 -m pip install git+https://github.com/Binance-docs/Binance_Futures_python.git
 
 ```
 
