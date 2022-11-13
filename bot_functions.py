@@ -292,66 +292,26 @@ def avarage_true_range(high, low, close):
 
 #Our trading strategy - it takes in heikin ashi open, high, low and close data and returns a list of signal values
 #signals are -1 for short, 1 for long and 0 for do nothing
-def trading_signal(h_o, h_h, h_l, h_c, use_last=False):
-    factor = 1
-    pd = 1
-
-    hl2 = (np.array(h_h) + np.array(h_l)) / 2
-    hl2 = hl2[1:]
-
-    atr = avarage_true_range(h_h, h_l, h_c)
-
-    up = hl2 - (factor * atr)
-    dn = hl2 + (factor * atr)
-
-    trend_up = [0]
-    trend_down = [0]
-
-    for i, v in enumerate(h_c[1:]):
-        if i != 0:
-
-            if h_c[i-1] > trend_up[i-1]:
-                trend_up.append(np.max([up[i], trend_up[i-1]]))
-            else:
-                trend_up.append(up[i])
-
-            if h_c[i-1] < trend_down[i-1]:
-                trend_down.append(np.min([dn[i], trend_down[i-1]]))
-            else:
-                trend_down.append(dn[i])
-
-    trend = []
-    last = 0
-    for i, v in enumerate(h_c):
-        if i != 0:
-            if h_c[i] > trend_down[i-1]:
-                tr = 1
-                last = tr
-            elif h_c[i] < trend_up[i-1]:
-                tr = -1
-                last = tr
-            else:
-                tr = last
-            trend.append(tr)
+def new_trading_signal(h_o, h_h, h_l, h_c, use_last=False):
 
     entry = [0]
     last = 0
-    for i, v in enumerate(trend):
+    for i, v in enumerate(h_o):
         if i != 0:
-            if trend[i] == 1 and trend[i-1] == -1:
+            if h_o[i-1] < h_c[i-1]:
                 entry.append(1)
                 last = 1
-
-            elif trend[i] == -1 and trend[i-1] == 1:
+            
+            elif h_o[i-1] > h_c[i-1]:
                 entry.append(-1)
                 last = -1
-
+            
             else:
                 if use_last:
                     entry.append(last)
                 else:
                     entry.append(0)
-
+    
     return entry
 
 #get the data from the market, create heikin ashi candles and then generate signals
@@ -361,7 +321,7 @@ def get_signal(client, _market="BTCUSDT", _period="15m", use_last=False):
     o, h, l, c, v = convert_candles(candles)
     h_o, h_h, h_l, h_c = construct_heikin_ashi(o, h, l, c)
     ohlcv = to_dataframe(h_o, h_h, h_l, h_c, v)
-    entry = trading_signal(h_o, h_h, h_l, h_c, use_last)
+    entry = new_trading_signal(h_o, h_h, h_l, h_c, use_last)
     return entry
 
 #get signal that is confirmed across multiple time scales
